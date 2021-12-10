@@ -17,7 +17,7 @@ blueprint:
           entity:
             domain: media_player
     initial_message:
-      name: Final message
+      name: Initial message
       description: What to say when door first opens
     announcement_message:
       name: Announcement message
