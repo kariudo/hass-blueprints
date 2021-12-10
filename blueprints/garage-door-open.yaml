@@ -1,0 +1,74 @@
+blueprint:
+  name: Garage Door Open TTS Announcements
+  domain: automation
+  input:
+    monitored_entity:
+      name: Monitored Sensor
+      description: Entity that causes announcement
+      selector:
+        entity:
+          domain: cover
+          device_class: garage
+    speaker_target:
+      name: Speaker
+      description: Entity to announce event on
+      selector:
+        target:
+          entity:
+            domain: media_player
+    initial_message:
+      name: Final message
+      description: What to say when door first opens
+    announcement_message:
+      name: Announcement message
+      description: What to say when door is opened
+    final_message:
+      name: Final message
+      description: What to say when door is closed
+    cooldown:
+      name: Announcement cooldown
+      description: The minimum time needed in between announcements
+      default: 10
+      selector:
+        number:
+          min: 0.0
+          max: 600.0
+          unit_of_measurement: seconds
+          mode: slider
+          step: 1.0
+  source_url: https://community.home-assistant.io/t/garage-door-open-tts-announcer-reminder-google-translate-say/365197
+mode: single
+trigger:
+  platform: state
+  entity_id: !input 'monitored_entity'
+  from:
+    - 'opening'
+    - 'closed'
+  to: 'open'
+action:
+- service: tts.google_translate_say
+  target: !input 'speaker_target'
+  data:
+    message: !input 'initial_message'
+- delay: !input 'cooldown'
+- alias: Repeat the sequence UNTIL the door is closed
+  repeat:
+    sequence:
+    - service: tts.google_translate_say
+      target: !input 'speaker_target'
+      data:
+        message: !input 'announcement_message'
+    - wait_for_trigger:
+      - platform: state
+        entity_id: !input 'monitored_entity'
+        to: 'closed'
+        for: 10
+      timeout:  !input 'cooldown'
+    until:
+    - condition: state
+      entity_id: !input 'monitored_entity'
+      state: 'closed'
+- service: tts.google_translate_say
+  target: !input 'speaker_target'
+  data:
+    message: !input 'final_message'
