@@ -11,7 +11,7 @@ blueprint:
           device_class: garage
     speaker_target:
       name: Speaker
-      description: Entity to announce event on
+      description: Entity to announce event on. Must be an entity, selecting a device may cause errors.
       selector:
         target:
           entity:
